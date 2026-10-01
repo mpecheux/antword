@@ -2,258 +2,374 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Mot Mystère</title>
 
 <style>
 :root {
+    --bg: #1f2328;
+    --text: #ffffff;
+    --cell-bg: #3c434d;
+    --cell-border: #555;
+    --cell-active-border: #8b949e;
+    --key-bg: #818384;
+    --key-text: #000;
+    --btn-bg: #238636;
+    --btn-text: #000;
     --green: #6aaa64;
     --yellow: #c9b458;
-    --gray: #787c7e;
-    --light: #d3d6da;
+    --gray: #565758;
+    --glow: none;
+
+    /* Tailles adaptatives : tout doit tenir à l'écran (mobile & PC) */
+    --cell: min(15vw, 7.5dvh, 62px);
+    --key-w: min(8.7vw, 46px);
+    --key-h: min(7dvh, 56px);
+    --gap: min(1.2vw, 6px);
+}
+
+* {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
 }
 
 body {
-	font-family: Arial, sans-serif;
-	margin: 0;
-	min-height: 100vh;
-	background: #2d333b;
-	 
-	background: #1f2328;
-	color: white;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    justify-content: center;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+    transition: background 0.3s, color 0.3s;
+}
 
+.container {
+    width: 100%;
+    max-width: 520px;
+    height: 100dvh;
+    padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+}
 
-	button {
-		padding: 10px 18px;
-		margin: 5px;
-		 
-		background: #238636;
-		color: black;
-		 
-		border: none;
-		border-radius: 8px;
-		 
-		cursor: pointer;
-		font-weight: bold;
-		 
-		transition: 0.2s;
-	}
- 
-	button:hover {
-		
-	}
-
-	.container {
-		text-align: center;
-		padding: 30px;
-		width: 100%;
-	}
-
-display: flex;
-flex-direction: column;
-justify-content: center;
-align-items: center;
+header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    flex-shrink: 0;
 }
 
 h1 {
-    margin: 20px 0;
+    margin: 4px 0;
+    font-size: min(8vw, 4.5dvh, 34px);
 }
 
-#setup {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
-#setup input {
-    text-transform: uppercase;
-    width: 120px;
-    text-align: center;
-    font-size: 18px;
+#themeToggle {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 10px;
+    margin: 0;
+    font-size: 13px;
 }
 
 button {
-    padding: 8px 16px;
-    margin: 5px;
+    padding: 10px 18px;
+    margin: 4px;
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 8px;
     cursor: pointer;
+    font-weight: bold;
+    font-size: 15px;
+    transition: 0.2s;
 }
 
-#game {
-    display: none;
-	align-items: center;
+button:hover {
+    filter: brightness(1.15);
+}
+
+button:active {
+    transform: scale(0.96);
+}
+
+/* Zones principales */
+main {
+    flex: 1;
+    min-height: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: min(2dvh, 14px);
+}
+
+#setup, #game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: min(1.5dvh, 10px);
+}
+
+.hidden {
+    display: none !important;
+}
+
+#setup h3 {
+    margin: 4px 0;
+    font-size: min(4.5vw, 2.6dvh, 18px);
+}
+
+.secret-row {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 4px;
+    border: 2px solid transparent;
+}
+
+.secret-row.active {
+    border-color: var(--cell-active-border);
 }
 
 #grid {
-    display: grid;
-    gap: 5px;
-    margin-bottom: 20px;
-	justify-content: center;
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap);
 }
 
 .row {
     display: flex;
-    gap: 5px;
-	justify-content: center;
+    gap: var(--gap);
+    justify-content: center;
 }
 
 .cell {
-	width: 65px;
-	height: 65px;
-	border: 2px solid #555;
-	background: #3c434d;
-	color: white;
-	font-size: 32px;
-	font-weight: bold;
-	text-transform: uppercase;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	border-radius: 8px;
-	transition: 0.2s;
-}
-
-.green {
-    background: var(--green);
-    color: white;
-    border-color: var(--green);
-}
-
-.yellow {
-    background: var(--yellow);
-    color: white;
-    border-color: var(--yellow);
-}
-
-.gray {
-    background: var(--gray);
-    color: white;
-    border-color: var(--gray);
-}
-
-#guessInput {
-    width: 180px;
-    text-align: center;
-    font-size: 22px;
+    width: var(--cell);
+    height: var(--cell);
+    border: 2px solid var(--cell-border);
+    background: var(--cell-bg);
+    color: var(--text);
+    font-size: calc(var(--cell) * 0.55);
+    font-weight: bold;
     text-transform: uppercase;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    transition: 0.2s;
 }
 
-input {
-	background: #3c434d;
-	color: white;
-	border: 1px solid #666;
-	border-radius: 8px;
-	padding: 10px;
+.cell.filled {
+    border-color: var(--cell-active-border);
+    animation: pop 0.1s;
 }
 
-#setupFooter {
-    margin-top: 20px;
+.cell.green  { background: var(--green);  border-color: var(--green);  color: #fff; }
+.cell.yellow { background: var(--yellow); border-color: var(--yellow); color: #fff; }
+.cell.gray   { background: var(--gray);   border-color: var(--gray);   color: #fff; }
+
+.row.shake {
+    animation: shake 0.4s;
 }
 
+.cell.flip {
+    animation: flip 0.5s ease-in-out;
+}
+
+.cell.bounce {
+    animation: bounce 0.5s ease;
+}
+
+@keyframes flip {
+    0%   { transform: rotateX(0deg); }
+    50%  { transform: rotateX(90deg); }
+    100% { transform: rotateX(0deg); }
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    40%      { transform: translateY(-30%); }
+    60%      { transform: translateY(5%); }
+}
+
+@keyframes pop {
+    50% { transform: scale(1.1); }
+}
+
+@keyframes shake {
+    20%, 60% { transform: translateX(-6px); }
+    40%, 80% { transform: translateX(6px); }
+}
+
+.message {
+    font-weight: bold;
+    min-height: 1.3em;
+    font-size: min(4.5vw, 2.4dvh, 18px);
+}
+
+/* Clavier intégré */
 #keyboard {
-    margin-top: 20px;
+    flex-shrink: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .kb-row {
     display: flex;
     justify-content: center;
-    margin: 5px 0;
+    margin: 3px 0;
 }
 
 .key {
-	width: 42px;
-	height: 54px;
-	margin: 2px;
-	border: none;
-	border-radius: 6px;
-	 
-	background: #818384;
-	color: black;
-	 
-	font-weight: bold;
-	cursor: pointer;
-	 
-	transition: 0.2s;
+    width: var(--key-w);
+    height: var(--key-h);
+    margin: 2px;
+    padding: 0;
+    border-radius: 6px;
+    background: var(--key-bg);
+    color: var(--key-text);
+    font-size: min(4.5vw, 18px);
 }
 
-
-.key.green {
-	background: #6aaa64 !important;
-	color: white;
-}
- 
-.key.yellow {
-	background: #c9b458 !important;
-	color: white;
-}
- 
-.key.gray {
-	background: #565758 !important;
-	color: white;
+.key.wide {
+    width: calc(var(--key-w) * 1.6);
+    font-size: min(3vw, 13px);
 }
 
-.message {
-    margin-top: 10px;
-    font-weight: bold;
-    min-height: 20px;
+.key.green  { background: var(--green)  !important; color: #fff; }
+.key.yellow { background: var(--yellow) !important; color: #fff; }
+.key.gray   { background: var(--gray)   !important; color: #fff; }
+
+footer {
+    flex-shrink: 0;
+    padding-top: 4px;
 }
 
-.hidden {
-    display:none;
+/* ====== Mode néon ====== */
+body.neon {
+    --bg: #07000f;
+    --text: #e6f7ff;
+    --cell-bg: #0d0221;
+    --cell-border: #2de2e6;
+    --cell-active-border: #ff2a6d;
+    --key-bg: #120428;
+    --key-text: #2de2e6;
+    --btn-bg: transparent;
+    --btn-text: #ff2a6d;
+    --green: #39ff14;
+    --yellow: #ffe600;
+    --gray: #3a3550;
+    background:
+        radial-gradient(circle at 50% 0%, #2a0845 0%, transparent 60%),
+        var(--bg);
+}
+
+body.neon h1 {
+    color: #ff2a6d;
+    text-shadow: 0 0 5px #ff2a6d, 0 0 15px #ff2a6d, 0 0 30px #ff2a6d;
+    letter-spacing: 2px;
+}
+
+body.neon h3 {
+    color: #2de2e6;
+    text-shadow: 0 0 6px #2de2e6;
+}
+
+body.neon button {
+    border: 2px solid currentColor;
+    box-shadow: 0 0 6px currentColor, inset 0 0 6px currentColor;
+    text-shadow: 0 0 4px currentColor;
+}
+
+body.neon .key {
+    border: 1px solid #2de2e6;
+    box-shadow: 0 0 4px #2de2e6;
+}
+
+body.neon .cell {
+    box-shadow: 0 0 6px var(--cell-border), inset 0 0 6px rgba(45, 226, 230, 0.3);
+    text-shadow: 0 0 6px #fff;
+}
+
+body.neon .cell.filled {
+    box-shadow: 0 0 10px var(--cell-active-border);
+}
+
+body.neon .cell.green,
+body.neon .key.green  { color: #002400 !important; box-shadow: 0 0 12px var(--green);  text-shadow: none; }
+body.neon .cell.yellow,
+body.neon .key.yellow { color: #2a2400 !important; box-shadow: 0 0 12px var(--yellow); text-shadow: none; }
+body.neon .cell.gray,
+body.neon .key.gray   { color: #8a84a3 !important; box-shadow: none; border-color: var(--gray); text-shadow: none; }
+
+body.neon .secret-row.active {
+    box-shadow: 0 0 10px var(--cell-active-border);
+}
+
+body.neon .message {
+    color: #ffe600;
+    text-shadow: 0 0 8px #ffe600;
 }
 </style>
 </head>
 <body>
 
-
 <div class="container">
-	<h1>Mot Mystère</h1>
-	<div id="setup">
-		<h3>Choisir le mot secret</h3>
-		<input id="secretInput" maxlength="5" type="password" placeholder="MOT">
+    <header>
+        <h1>Mot Mystère</h1>
+        <button id="themeToggle" type="button" onclick="toggleNeon()">✨ Néon</button>
+    </header>
 
-		<h3>Confirmer</h3>
-		<input id="secretInput2" maxlength="5" type="password" placeholder="MOT">		
-		<br>
-	
-		<div id="setupFooter">
-			<button onclick="startManualGame()">
-				Utiliser ce mot
-			</button>
+    <main>
+        <div id="setup">
+            <h3>Choisir le mot secret</h3>
+            <div class="row secret-row active" id="secret-0" onclick="selectSecretRow(0)"></div>
 
-			<button onclick="startRandomGame()">
-				Mot aléatoire
-			</button>
-		</div>
-	</div>
+            <h3>Confirmer</h3>
+            <div class="row secret-row" id="secret-1" onclick="selectSecretRow(1)"></div>
 
-	<div id="game">
+            <div class="message" id="setupMessage"></div>
 
-		<div id="grid"></div>
+            <div>
+                <button type="button" onclick="startManualGame()">Utiliser ce mot</button>
+                <button type="button" onclick="startRandomGame()">Mot aléatoire</button>
+            </div>
+        </div>
 
-		<input
-			id="guessInput"
-			maxlength="5"
-			placeholder="ESSAI">
+        <div id="game" class="hidden">
+            <div id="grid"></div>
+            <div class="message" id="message"></div>
+        </div>
+    </main>
 
-		<button onclick="submitGuess()">
-			Valider
-		</button>
+    <div id="keyboard"></div>
 
-		<div class="message" id="message"></div>
-
-		<div id="keyboard"></div>
-
-		<button onclick="resetGame()">
-			Nouvelle partie
-		</button>
-
-	</div>
+    <footer id="gameFooter" class="hidden">
+        <button type="button" onclick="resetGame()">Nouvelle partie</button>
+    </footer>
 </div>
+
 <script>
 
 /*
-    Liste à compléter.
-    Remplace-la ensuite par l'ensemble
-    des mots français de 5 lettres.
+    Liste des mots français de 5 lettres.
 */
 const WORDS = [
 "ABACA",
@@ -8318,63 +8434,100 @@ const WORDS = [
 "ZUMBA"
 ];
 
+const WORD_LENGTH = 5;
+const MAX_TRIES = 6;
+const KEY_ENTER = "ENTER";
+const KEY_DELETE = "DELETE";
 
 const KEYBOARD_ROWS = [
-    "AZERTYUIOP",
-    "QSDFGHJKLM",
-    "WXCVBN"
+    [..."AZERTYUIOP"],
+    [..."QSDFGHJKLM"],
+    [KEY_ENTER, ..."WXCVBN", KEY_DELETE]
 ];
+
+const WORD_SET = new Set(WORDS);
+
+// "setup" : saisie du mot secret ; "game" : partie en cours
+let phase = "setup";
+
+let secretInputs = ["", ""];
+let activeSecretRow = 0;
 
 let secretWord = "";
 let currentRow = 0;
+let currentGuess = "";
 let gameOver = false;
+let revealing = false;
+let currentGameId = 0;
+
+const FLIP_DURATION = 500;
+const FLIP_DELAY = 300;
 
 const keyboardState = {};
 
-function initializeBoard() {
+/* ---------- Construction de l'interface ---------- */
 
+function createCells(container, count, idPrefix) {
+    container.innerHTML = "";
+    for (let c = 0; c < count; c++) {
+        const cell = document.createElement("div");
+        cell.className = "cell";
+        if (idPrefix) {
+            cell.id = `${idPrefix}-${c}`;
+        }
+        container.appendChild(cell);
+    }
+}
+
+function initializeBoard() {
     const grid = document.getElementById("grid");
     grid.innerHTML = "";
 
-    for (let r = 0; r < 6; r++) {
+    for (let r = 0; r < MAX_TRIES; r++) {
         const row = document.createElement("div");
         row.className = "row";
-
-        for (let c = 0; c < 5; c++) {
-            const cell = document.createElement("div");
-            cell.className = "cell";
-            cell.id = `cell-${r}-${c}`;
-            row.appendChild(cell);
-        }
-
+        row.id = `row-${r}`;
+        createCells(row, WORD_LENGTH, `cell-${r}`);
         grid.appendChild(row);
     }
 }
 
-function createKeyboard() {
+function initializeSetup() {
+    secretInputs = ["", ""];
+    createCells(document.getElementById("secret-0"), WORD_LENGTH);
+    createCells(document.getElementById("secret-1"), WORD_LENGTH);
+    selectSecretRow(0);
+    showSetupMessage("");
+}
 
+function createKeyboard() {
     const keyboard = document.getElementById("keyboard");
     keyboard.innerHTML = "";
 
     KEYBOARD_ROWS.forEach(line => {
-
         const row = document.createElement("div");
         row.className = "kb-row";
 
-        [...line].forEach(letter => {
-
+        line.forEach(key => {
             const btn = document.createElement("button");
+            btn.type = "button";
             btn.className = "key";
-            btn.textContent = letter;
-            btn.id = "key-" + letter;
 
-            btn.onclick = () => {
-                const input = document.getElementById("guessInput");
+            if (key === KEY_ENTER) {
+                btn.textContent = "Valider";
+                btn.classList.add("wide");
+            } else if (key === KEY_DELETE) {
+                btn.textContent = "⌫ Effacer";
+                btn.classList.add("wide");
+            } else {
+                btn.textContent = key;
+                btn.id = "key-" + key;
+            }
 
-                if (input.value.length < 5) {
-                    input.value += letter;
-                }
-            };
+            btn.addEventListener("click", e => {
+                handleKey(key);
+                e.currentTarget.blur();
+            });
 
             row.appendChild(btn);
         });
@@ -8383,27 +8536,131 @@ function createKeyboard() {
     });
 }
 
+/* ---------- Gestion des touches (clavier intégré + clavier PC) ---------- */
+
+function handleKey(key) {
+    if (phase === "setup") {
+        handleSetupKey(key);
+    } else {
+        handleGameKey(key);
+    }
+}
+
+function handleSetupKey(key) {
+    if (key === KEY_ENTER) {
+        if (activeSecretRow === 0 && secretInputs[0].length === WORD_LENGTH) {
+            selectSecretRow(1);
+        } else {
+            startManualGame();
+        }
+        return;
+    }
+
+    let value = secretInputs[activeSecretRow];
+
+    if (key === KEY_DELETE) {
+        value = value.slice(0, -1);
+    } else if (value.length < WORD_LENGTH) {
+        value += key;
+    } else {
+        return;
+    }
+
+    secretInputs[activeSecretRow] = value;
+    renderSecretRow(activeSecretRow);
+    showSetupMessage("");
+
+    // Passage automatique à la confirmation
+    if (activeSecretRow === 0 && value.length === WORD_LENGTH && secretInputs[1].length === 0) {
+        selectSecretRow(1);
+    }
+}
+
+function handleGameKey(key) {
+    if (gameOver || revealing) {
+        return;
+    }
+
+    if (key === KEY_ENTER) {
+        submitGuess();
+        return;
+    }
+
+    if (key === KEY_DELETE) {
+        currentGuess = currentGuess.slice(0, -1);
+    } else if (currentGuess.length < WORD_LENGTH) {
+        currentGuess += key;
+    } else {
+        return;
+    }
+
+    renderCurrentRow();
+    showMessage("");
+}
+
+/* ---------- Rendu ---------- */
+
+function renderSecretRow(index) {
+    const row = document.getElementById(`secret-${index}`);
+    const value = secretInputs[index];
+
+    [...row.children].forEach((cell, i) => {
+        // Les lettres du mot secret ne sont jamais affichées
+        cell.textContent = i < value.length ? "●" : "";
+        cell.classList.toggle("filled", i < value.length);
+    });
+}
+
+function selectSecretRow(index) {
+    activeSecretRow = index;
+    document.getElementById("secret-0").classList.toggle("active", index === 0);
+    document.getElementById("secret-1").classList.toggle("active", index === 1);
+}
+
+function renderCurrentRow() {
+    for (let i = 0; i < WORD_LENGTH; i++) {
+        const cell = document.getElementById(`cell-${currentRow}-${i}`);
+        cell.textContent = currentGuess[i] || "";
+        cell.classList.toggle("filled", i < currentGuess.length);
+    }
+}
+
+function shake(element) {
+    element.classList.remove("shake");
+    void element.offsetWidth;
+    element.classList.add("shake");
+}
+
+function showMessage(text) {
+    document.getElementById("message").textContent = text;
+}
+
+function showSetupMessage(text) {
+    document.getElementById("setupMessage").textContent = text;
+}
+
+/* ---------- Démarrage de partie ---------- */
+
 function startManualGame() {
+    const [value, value2] = secretInputs;
 
-    const value = document
-        .getElementById("secretInput")
-        .value
-        .trim()
-        .toUpperCase();
-		
-    const value2 = document
-        .getElementById("secretInput2")
-        .value
-        .trim()
-        .toUpperCase();		
+    if (value.length !== WORD_LENGTH) {
+        showSetupMessage("Le mot doit contenir 5 lettres.");
+        selectSecretRow(0);
+        shake(document.getElementById("secret-0"));
+        return;
+    }
 
-	if (value != value2) {
-		alert("Les deux mots saisis ne sont pas identiques")
-		return;
-	}
+    if (value !== value2) {
+        showSetupMessage("Les deux mots saisis ne sont pas identiques.");
+        selectSecretRow(1);
+        shake(document.getElementById("secret-1"));
+        return;
+    }
 
-    if (!WORDS.includes(value)) {
-        alert("Le mot n'existe pas.");
+    if (!WORD_SET.has(value)) {
+        showSetupMessage("Le mot n'existe pas.");
+        shake(document.getElementById("secret-0"));
         return;
     }
 
@@ -8411,76 +8668,85 @@ function startManualGame() {
 }
 
 function startRandomGame() {
-
-    const random =
-        WORDS[Math.floor(Math.random() * WORDS.length)];
-
+    const random = WORDS[Math.floor(Math.random() * WORDS.length)];
     launchGame(random);
 }
 
 function launchGame(word) {
-
     secretWord = word;
     currentRow = 0;
+    currentGuess = "";
     gameOver = false;
+    revealing = false;
+    currentGameId++;
+    phase = "game";
 
     Object.keys(keyboardState).forEach(k => delete keyboardState[k]);
 
     initializeBoard();
     createKeyboard();
+    showMessage("");
 
-    document.getElementById("setup").style.display = "none";
-    document.getElementById("game").style.display = "block";
-
-    document.getElementById("guessInput").value = "";
-    document.getElementById("message").textContent = "";
+    document.getElementById("setup").classList.add("hidden");
+    document.getElementById("game").classList.remove("hidden");
+    document.getElementById("gameFooter").classList.remove("hidden");
 }
 
+function isGameInProgress() {
+    return phase === "game" && !gameOver;
+}
+
+function resetGame() {
+    if (isGameInProgress() &&
+        !confirm("Une partie est en cours. Voulez-vous vraiment commencer une nouvelle partie ?")) {
+        return;
+    }
+
+    phase = "setup";
+    secretWord = "";
+    currentGuess = "";
+    gameOver = false;
+    revealing = false;
+    currentGameId++;
+
+    document.getElementById("game").classList.add("hidden");
+    document.getElementById("gameFooter").classList.add("hidden");
+    document.getElementById("setup").classList.remove("hidden");
+
+    createKeyboard();
+    initializeSetup();
+    showMessage("");
+}
+
+/* ---------- Évaluation ---------- */
+
 function updateKeyboard(letter, state) {
+    const priority = { gray: 1, yellow: 2, green: 3 };
 
-    const priority = {
-        gray: 1,
-        yellow: 2,
-        green: 3
-    };
-
-    if (
-        !keyboardState[letter] ||
-        priority[state] > priority[keyboardState[letter]]
-    ) {
+    if (!keyboardState[letter] || priority[state] > priority[keyboardState[letter]]) {
         keyboardState[letter] = state;
     }
 
     const key = document.getElementById("key-" + letter);
 
     if (key) {
-        key.classList.remove(
-            "green",
-            "yellow",
-            "gray"
-        );
-
+        key.classList.remove("green", "yellow", "gray");
         key.classList.add(keyboardState[letter]);
     }
 }
 
 function evaluateGuess(guess) {
-
-    const result = Array(5).fill("gray");
-
+    const result = Array(WORD_LENGTH).fill("gray");
     const secretLetters = secretWord.split("");
 
-    for (let i = 0; i < 5; i++) {
-
+    for (let i = 0; i < WORD_LENGTH; i++) {
         if (guess[i] === secretWord[i]) {
-
             result[i] = "green";
             secretLetters[i] = null;
         }
     }
 
-    for (let i = 0; i < 5; i++) {
-
+    for (let i = 0; i < WORD_LENGTH; i++) {
         if (result[i] === "green") {
             continue;
         }
@@ -8497,107 +8763,161 @@ function evaluateGuess(guess) {
 }
 
 function submitGuess() {
-
-    if (gameOver) {
+    if (gameOver || revealing) {
         return;
     }
 
-    const input = document.getElementById("guessInput");
+    const guess = currentGuess;
+    const row = document.getElementById(`row-${currentRow}`);
 
-    const guess = input.value.trim().toUpperCase();
-
-    if (guess.length !== 5) {
+    if (guess.length !== WORD_LENGTH) {
         showMessage("Le mot doit contenir 5 lettres.");
+        shake(row);
         return;
     }
 
-    if (!WORDS.includes(guess)) {
+    if (!WORD_SET.has(guess)) {
         showMessage("Mot inconnu.");
+        shake(row);
         return;
     }
 
     const result = evaluateGuess(guess);
+    const gameId = currentGameId;
 
-    for (let i = 0; i < 5; i++) {
+    revealing = true;
+    currentGuess = "";
 
-        const cell =
-            document.getElementById(
-                `cell-${currentRow}-${i}`
-            );
+    revealRow(currentRow, guess, result, () => {
+        // Partie abandonnée pendant l'animation
+        if (gameId !== currentGameId) {
+            return;
+        }
 
-        cell.textContent = guess[i];
-        cell.classList.add(result[i]);
+        revealing = false;
 
-        updateKeyboard(
-            guess[i],
-            result[i]
-        );
-    }
+        for (let i = 0; i < WORD_LENGTH; i++) {
+            updateKeyboard(guess[i], result[i]);
+        }
 
-    if (guess === secretWord) {
+        if (guess === secretWord) {
+            gameOver = true;
+            bounceRow(row);
+            showMessage("🎉 Bravo ! Mot trouvé.");
+            return;
+        }
 
-        gameOver = true;
+        currentRow++;
 
-        showMessage(
-            "🎉 Bravo ! Mot trouvé."
-        );
-
-        return;
-    }
-
-    currentRow++;
-
-    if (currentRow >= 6) {
-
-        gameOver = true;
-
-        showMessage(
-            "❌ Perdu ! Le mot était : " +
-            secretWord
-        );
-    }
-
-    input.value = "";
+        if (currentRow >= MAX_TRIES) {
+            gameOver = true;
+            showMessage("❌ Perdu ! Le mot était : " + secretWord);
+        }
+    });
 }
 
-function showMessage(text) {
-    document.getElementById("message")
-        .textContent = text;
+/* Retourne les tuiles une par une ; la couleur est appliquée à mi-rotation */
+function revealRow(rowIndex, guess, result, onDone) {
+    const gameId = currentGameId;
+
+    for (let i = 0; i < WORD_LENGTH; i++) {
+        const cell = document.getElementById(`cell-${rowIndex}-${i}`);
+        const start = i * FLIP_DELAY;
+
+        setTimeout(() => {
+            if (gameId !== currentGameId) return;
+            cell.classList.add("flip");
+        }, start);
+
+        setTimeout(() => {
+            if (gameId !== currentGameId) return;
+            cell.classList.remove("filled");
+            cell.classList.add(result[i]);
+        }, start + FLIP_DURATION / 2);
+
+        setTimeout(() => {
+            if (gameId !== currentGameId) return;
+            cell.classList.remove("flip");
+        }, start + FLIP_DURATION);
+    }
+
+    setTimeout(onDone, (WORD_LENGTH - 1) * FLIP_DELAY + FLIP_DURATION);
 }
 
-function resetGame() {
-
-    secretWord = "";
-
-    document.getElementById("game")
-        .style.display = "none";
-
-    document.getElementById("setup")
-        .style.display = "block";
-
-    document.getElementById("secretInput")
-        .value = "";
-
-    document.getElementById("message")
-        .textContent = "";
+function bounceRow(row) {
+    [...row.children].forEach((cell, i) => {
+        cell.style.animationDelay = `${i * 100}ms`;
+        cell.classList.add("bounce");
+    });
 }
+
+/* ---------- Mode néon ---------- */
+
+function applyNeon(enabled) {
+    document.body.classList.toggle("neon", enabled);
+    document.getElementById("themeToggle").textContent = enabled ? "🌙 Classique" : "✨ Néon";
+}
+
+function toggleNeon() {
+    const enabled = !document.body.classList.contains("neon");
+    applyNeon(enabled);
+    try {
+        localStorage.setItem("neonMode", enabled ? "1" : "0");
+    } catch (e) { /* stockage indisponible */ }
+    document.getElementById("themeToggle").blur();
+}
+
+/* ---------- Événements globaux ---------- */
 
 document.addEventListener("keydown", e => {
-
-    const input =
-        document.getElementById("guessInput");
-
-    if (
-        document.getElementById("game")
-        .style.display === "none"
-    ) {
+    if (e.ctrlKey || e.metaKey || e.altKey) {
         return;
     }
 
     if (e.key === "Enter") {
-        submitGuess();
+        e.preventDefault();
+        handleKey(KEY_ENTER);
+        return;
+    }
+
+    if (e.key === "Backspace" || e.key === "Delete") {
+        e.preventDefault();
+        handleKey(KEY_DELETE);
+        return;
+    }
+
+    if (e.key.length === 1) {
+        // Retire les accents (é -> E, ç -> C...)
+        const letter = e.key
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .toUpperCase();
+
+        if (/^[A-Z]$/.test(letter)) {
+            e.preventDefault();
+            handleKey(letter);
+        }
     }
 });
+
+// Confirmation avant rafraîchissement / fermeture de la page pendant une partie
+window.addEventListener("beforeunload", e => {
+    if (isGameInProgress()) {
+        e.preventDefault();
+        e.returnValue = "";
+    }
+});
+
+(function init() {
+    let neon = false;
+    try {
+        neon = localStorage.getItem("neonMode") === "1";
+    } catch (e) { /* stockage indisponible */ }
+    applyNeon(neon);
+
+    createKeyboard();
+    initializeSetup();
+})();
 
 </script>
 
