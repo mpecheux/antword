@@ -262,6 +262,97 @@ footer {
     padding-top: 4px;
 }
 
+/* Switch Mode Speedrun */
+.speedrun-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 2px 0;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+    flex-shrink: 0;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--cell-bg);
+    border: 2px solid var(--cell-border);
+    transition: 0.2s ease;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #fff;
+    transition: 0.2s ease;
+    border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+    background-color: var(--green);
+    border-color: var(--green);
+}
+
+.switch input:checked + .slider:before {
+    transform: translateX(20px);
+}
+
+.switch input:focus-visible + .slider {
+    outline: 2px solid var(--cell-active-border);
+    outline-offset: 2px;
+}
+
+.switch-label {
+    font-size: min(4vw, 2.2dvh, 16px);
+    font-weight: bold;
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* Timer */
+.timer {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: min(5vw, 2.6dvh, 20px);
+    font-weight: bold;
+    font-family: monospace, sans-serif;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+    padding: 3px 12px;
+    border-radius: 16px;
+    background: var(--cell-bg);
+    border: 2px solid var(--cell-border);
+    color: var(--text);
+}
+
 /* ====== Mode néon ====== */
 body.neon {
     --bg: #07000f;
@@ -327,6 +418,41 @@ body.neon .message {
     color: #ffe600;
     text-shadow: 0 0 8px #ffe600;
 }
+
+body.neon .slider {
+    background-color: #120428;
+    border-color: #2de2e6;
+    box-shadow: 0 0 6px #2de2e6;
+}
+
+body.neon .slider:before {
+    background-color: #2de2e6;
+    box-shadow: 0 0 6px #2de2e6;
+}
+
+body.neon .switch input:checked + .slider {
+    background-color: #0d0221;
+    border-color: #39ff14;
+    box-shadow: 0 0 10px #39ff14;
+}
+
+body.neon .switch input:checked + .slider:before {
+    background-color: #39ff14;
+    box-shadow: 0 0 8px #39ff14;
+}
+
+body.neon .switch-label {
+    color: #2de2e6;
+    text-shadow: 0 0 6px #2de2e6;
+}
+
+body.neon .timer {
+    color: #ffe600;
+    text-shadow: 0 0 8px #ffe600;
+    border-color: #ffe600;
+    box-shadow: 0 0 10px #ffe600, inset 0 0 6px rgba(255, 230, 0, 0.3);
+    background: rgba(255, 230, 0, 0.05);
+}
 </style>
 </head>
 <body>
@@ -345,6 +471,14 @@ body.neon .message {
             <h3>Confirmer</h3>
             <div class="row secret-row" id="secret-1" onclick="selectSecretRow(1)"></div>
 
+            <div class="speedrun-container">
+                <label class="switch" title="Activer le mode speedrun">
+                    <input type="checkbox" id="speedrunToggle">
+                    <span class="slider"></span>
+                </label>
+                <label for="speedrunToggle" class="switch-label">Mode Speedrun ⏱️</label>
+            </div>
+
             <div class="message" id="setupMessage"></div>
 
             <div>
@@ -354,6 +488,7 @@ body.neon .message {
         </div>
 
         <div id="game" class="hidden">
+            <div id="timer" class="timer hidden">⏱️ 00:00.0</div>
             <div id="grid"></div>
             <div class="message" id="message"></div>
         </div>
@@ -8465,6 +8600,83 @@ const FLIP_DELAY = 300;
 
 const keyboardState = {};
 
+let speedrunMode = false;
+let speedrunRunning = false;
+let speedrunStartTime = 0;
+let speedrunEndTime = 0;
+let speedrunInterval = null;
+
+function formatTimer(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const tenths = Math.floor((ms % 1000) / 100);
+    const pad = n => String(n).padStart(2, "0");
+    return `${pad(minutes)}:${pad(seconds)}.${tenths}`;
+}
+
+function formatCompletionTime(ms) {
+    const totalSeconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const tenths = Math.floor((ms % 1000) / 100);
+    const pad = n => String(n).padStart(2, "0");
+
+    if (minutes > 0) {
+        return `${minutes}m ${pad(seconds)}.${tenths}s`;
+    }
+    return `${seconds}.${tenths}s`;
+}
+
+function startSpeedrunTimer() {
+    stopSpeedrunTimer();
+    speedrunRunning = true;
+    speedrunStartTime = Date.now();
+    speedrunEndTime = 0;
+
+    const timerEl = document.getElementById("timer");
+    if (timerEl) {
+        timerEl.textContent = "⏱️ 00:00.0";
+        timerEl.classList.remove("hidden");
+    }
+
+    speedrunInterval = setInterval(() => {
+        if (!speedrunRunning) return;
+        const elapsed = Date.now() - speedrunStartTime;
+        if (timerEl) {
+            timerEl.textContent = "⏱️ " + formatTimer(elapsed);
+        }
+    }, 50);
+}
+
+function stopSpeedrunTimer() {
+    if (speedrunInterval) {
+        clearInterval(speedrunInterval);
+        speedrunInterval = null;
+    }
+    if (speedrunRunning && !speedrunEndTime) {
+        speedrunEndTime = Date.now();
+        const timerEl = document.getElementById("timer");
+        if (timerEl && speedrunStartTime) {
+            timerEl.textContent = "⏱️ " + formatTimer(speedrunEndTime - speedrunStartTime);
+        }
+    }
+    speedrunRunning = false;
+}
+
+function hideSpeedrunTimer() {
+    const timerEl = document.getElementById("timer");
+    if (timerEl) {
+        timerEl.classList.add("hidden");
+    }
+}
+
+function getSpeedrunElapsedMs() {
+    if (!speedrunStartTime) return 0;
+    const end = speedrunEndTime || Date.now();
+    return Math.max(0, end - speedrunStartTime);
+}
+
 /* ---------- Construction de l'interface ---------- */
 
 function createCells(container, count, idPrefix) {
@@ -8687,6 +8899,16 @@ function launchGame(word) {
     createKeyboard();
     showMessage("");
 
+    const speedrunToggle = document.getElementById("speedrunToggle");
+    speedrunMode = !!(speedrunToggle && speedrunToggle.checked);
+
+    if (speedrunMode) {
+        startSpeedrunTimer();
+    } else {
+        stopSpeedrunTimer();
+        hideSpeedrunTimer();
+    }
+
     document.getElementById("setup").classList.add("hidden");
     document.getElementById("game").classList.remove("hidden");
     document.getElementById("gameFooter").classList.remove("hidden");
@@ -8701,6 +8923,12 @@ function resetGame() {
         !confirm("Une partie est en cours. Voulez-vous vraiment commencer une nouvelle partie ?")) {
         return;
     }
+
+    stopSpeedrunTimer();
+    hideSpeedrunTimer();
+    speedrunMode = false;
+    speedrunStartTime = 0;
+    speedrunEndTime = 0;
 
     phase = "setup";
     secretWord = "";
@@ -8802,8 +9030,14 @@ function submitGuess() {
 
         if (guess === secretWord) {
             gameOver = true;
+            stopSpeedrunTimer();
             bounceRow(row);
-            showMessage("🎉 Bravo ! Mot trouvé.");
+            if (speedrunMode) {
+                const timeStr = formatCompletionTime(getSpeedrunElapsedMs());
+                showMessage(`🎉 Bravo ! Mot trouvé en ${timeStr} !`);
+            } else {
+                showMessage("🎉 Bravo ! Mot trouvé.");
+            }
             return;
         }
 
@@ -8811,6 +9045,7 @@ function submitGuess() {
 
         if (currentRow >= MAX_TRIES) {
             gameOver = true;
+            stopSpeedrunTimer();
             showMessage("❌ Perdu ! Le mot était : " + secretWord);
         }
     });
@@ -8914,6 +9149,20 @@ window.addEventListener("beforeunload", e => {
         neon = localStorage.getItem("neonMode") === "1";
     } catch (e) { /* stockage indisponible */ }
     applyNeon(neon);
+
+    let speedrunPref = false;
+    try {
+        speedrunPref = localStorage.getItem("speedrunMode") === "1";
+    } catch (e) { /* stockage indisponible */ }
+    const speedrunToggle = document.getElementById("speedrunToggle");
+    if (speedrunToggle) {
+        speedrunToggle.checked = speedrunPref;
+        speedrunToggle.addEventListener("change", e => {
+            try {
+                localStorage.setItem("speedrunMode", e.target.checked ? "1" : "0");
+            } catch (err) { /* stockage indisponible */ }
+        });
+    }
 
     createKeyboard();
     initializeSetup();
