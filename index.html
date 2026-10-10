@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Mot Mystère</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Eater&display=swap" rel="stylesheet">
 
 <style>
 :root {
@@ -81,9 +84,16 @@ h1 {
     right: 0;
     top: 50%;
     transform: translateY(-50%);
-    padding: 6px 10px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
     margin: 0;
-    font-size: 13px;
+    font-size: 18px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
 }
 
 button {
@@ -453,14 +463,153 @@ body.neon .timer {
     box-shadow: 0 0 10px #ffe600, inset 0 0 6px rgba(255, 230, 0, 0.3);
     background: rgba(255, 230, 0, 0.05);
 }
+
+/* ====== Mode Halloween ====== */
+.halloween-deco {
+    display: none;
+    font-size: min(7vw, 3.8dvh, 30px);
+    margin: 0 6px;
+    filter: drop-shadow(0 0 4px rgba(255, 140, 0, 0.6));
+}
+
+body.halloween .halloween-deco {
+    display: inline-block;
+}
+
+@media (max-width: 420px) {
+    .halloween-deco {
+        display: none !important;
+    }
+}
+
+body.halloween {
+    --bg: #1a0a2e;
+    --text: #f5e6ff;
+    --cell-bg: #3a1565;
+    --cell-border: #7b2ff7;
+    --cell-active-border: #ff8c00;
+    --key-bg: #5b2a86;
+    --key-text: #f5e6ff;
+    --btn-bg: #ff8c00;
+    --btn-text: #1a0a2e;
+    --green: #4f7a3b;
+    --yellow: #a68a2e;
+    --gray: #46306b;
+    background-color: var(--bg);
+    background-image:
+        radial-gradient(circle at 50% 0%, #4b1d7a 0%, transparent 60%),
+        url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><text x='8' y='34' font-size='30' opacity='0.16'>%F0%9F%A6%87</text><text x='95' y='60' font-size='30' opacity='0.14'>%F0%9F%8E%83</text><text x='28' y='120' font-size='30' opacity='0.14'>%F0%9F%A7%99</text><text x='115' y='150' font-size='30' opacity='0.16'>%F0%9F%90%B1</text></svg>");
+    background-repeat: no-repeat, repeat;
+}
+
+body.halloween h1 {
+    font-family: "Creepster", cursive;
+    color: #ff8c00;
+    text-shadow: 0 0 6px #ff8c00, 0 0 18px #7b2ff7;
+    letter-spacing: 2px;
+}
+
+body.halloween h3,
+body.halloween .message,
+body.halloween .switch-label {
+    font-family: "Eater", cursive;
+    color: #c77dff;
+    text-shadow: 0 0 6px rgba(199, 125, 255, 0.6);
+}
+
+body.halloween .cell,
+body.halloween .key {
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+body.halloween #themeToggle,
+body.halloween button {
+    font-family: "Eater", cursive;
+    border: 2px solid #ff8c00;
+    box-shadow: 0 0 6px rgba(255, 140, 0, 0.5);
+}
+
+body.halloween .cell {
+    box-shadow: 0 0 6px var(--cell-border), inset 0 0 6px rgba(123, 47, 247, 0.3);
+}
+
+body.halloween .cell.filled {
+    box-shadow: 0 0 10px var(--cell-active-border);
+}
+
+body.halloween .cell.green,
+body.halloween .key.green {
+    color: #f5e6ff !important;
+    box-shadow: 0 0 12px var(--green);
+}
+
+body.halloween .cell.yellow,
+body.halloween .key.yellow {
+    color: #fff5d6 !important;
+    box-shadow: 0 0 12px var(--yellow);
+}
+
+body.halloween .cell.gray,
+body.halloween .key.gray {
+    color: #cbb8e8 !important;
+    box-shadow: none;
+}
+
+body.halloween .secret-row.active {
+    box-shadow: 0 0 10px var(--cell-active-border);
+}
+
+body.halloween .slider {
+    background-color: var(--key-bg);
+    border-color: var(--cell-border);
+}
+
+body.halloween .switch input:checked + .slider {
+    background-color: #3a1565;
+    border-color: #ff8c00;
+    box-shadow: 0 0 10px #ff8c00;
+}
+
+body.halloween .timer {
+    color: #ff8c00;
+    border-color: #ff8c00;
+    box-shadow: 0 0 10px #ff8c00, inset 0 0 6px rgba(255, 140, 0, 0.3);
+    background: rgba(255, 140, 0, 0.08);
+    font-family: "Eater", cursive;
+}
+
+/* Animation de bonbons à la victoire */
+.candy {
+    position: fixed;
+    top: -40px;
+    font-size: 28px;
+    pointer-events: none;
+    z-index: 9999;
+    animation-name: candyFall;
+    animation-timing-function: ease-in;
+    animation-fill-mode: forwards;
+}
+
+@keyframes candyFall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(110vh) rotate(360deg);
+        opacity: 0.9;
+    }
+}
 </style>
 </head>
 <body>
 
 <div class="container">
     <header>
+        <span class="halloween-deco" aria-hidden="true">🦇🎃</span>
         <h1>Mot Mystère</h1>
-        <button id="themeToggle" type="button" onclick="toggleNeon()">✨ Néon</button>
+        <span class="halloween-deco" aria-hidden="true">🧙🐱</span>
+        <button id="themeToggle" type="button" onclick="cycleTheme()" title="Activer le mode Néon">✨</button>
     </header>
 
     <main>
@@ -9038,6 +9187,9 @@ function submitGuess() {
             } else {
                 showMessage("🎉 Bravo ! Mot trouvé.");
             }
+            if (document.body.classList.contains("halloween")) {
+                spawnCandyRain();
+            }
             return;
         }
 
@@ -9086,20 +9238,69 @@ function bounceRow(row) {
     });
 }
 
-/* ---------- Mode néon ---------- */
+/* ---------- Thèmes (normal / néon / halloween) ---------- */
 
-function applyNeon(enabled) {
-    document.body.classList.toggle("neon", enabled);
-    document.getElementById("themeToggle").textContent = enabled ? " 🌙 " : " ✨ ";
+const THEME_LABELS = {
+    normal: "✨",
+    neon: "🎃",
+    halloween: "🌙"
+};
+
+const THEME_TITLES = {
+    normal: "Activer le mode Néon",
+    neon: "Activer le mode Halloween",
+    halloween: "Revenir au mode Normal"
+};
+
+function isHalloweenPeriod() {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), 9, 10); // 10 octobre
+    const end = new Date(now.getFullYear(), 10, 1, 23, 59, 59); // 1er novembre
+    return now >= start && now <= end;
 }
 
-function toggleNeon() {
-    const enabled = !document.body.classList.contains("neon");
-    applyNeon(enabled);
+function applyTheme(mode) {
+    document.body.classList.toggle("neon", mode === "neon");
+    document.body.classList.toggle("halloween", mode === "halloween");
+    const btn = document.getElementById("themeToggle");
+    if (btn) {
+        btn.textContent = THEME_LABELS[mode] || THEME_LABELS.normal;
+        btn.title = THEME_TITLES[mode] || THEME_TITLES.normal;
+    }
+}
+
+function cycleTheme() {
+    const current = document.body.classList.contains("neon")
+        ? "neon"
+        : document.body.classList.contains("halloween")
+            ? "halloween"
+            : "normal";
+    const order = ["normal", "neon", "halloween"];
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    applyTheme(next);
     try {
-        localStorage.setItem("neonMode", enabled ? "1" : "0");
+        localStorage.setItem("themeMode", next);
     } catch (e) { /* stockage indisponible */ }
     document.getElementById("themeToggle").blur();
+}
+
+/* Pluie de bonbons à la victoire (mode Halloween) */
+function spawnCandyRain() {
+    const candies = ["🍬", "🍭", "🍫", "🎃"];
+    const count = 30;
+
+    for (let i = 0; i < count; i++) {
+        const candy = document.createElement("div");
+        candy.className = "candy";
+        candy.textContent = candies[Math.floor(Math.random() * candies.length)];
+        candy.style.left = `${Math.random() * 100}vw`;
+        const duration = 2 + Math.random() * 1.5;
+        candy.style.animationDuration = `${duration}s`;
+        candy.style.animationDelay = `${Math.random() * 0.6}s`;
+        candy.style.fontSize = `${20 + Math.random() * 16}px`;
+        document.body.appendChild(candy);
+        setTimeout(() => candy.remove(), (duration + 0.6) * 1000 + 200);
+    }
 }
 
 /* ---------- Événements globaux ---------- */
@@ -9144,11 +9345,19 @@ window.addEventListener("beforeunload", e => {
 });
 
 (function init() {
-    let neon = false;
+    let themeMode = null;
     try {
-        neon = localStorage.getItem("neonMode") === "1";
+        themeMode = localStorage.getItem("themeMode");
+        if (!themeMode && localStorage.getItem("neonMode") === "1") {
+            themeMode = "neon"; // migration de l'ancienne préférence
+        }
     } catch (e) { /* stockage indisponible */ }
-    applyNeon(neon);
+
+    if (!themeMode) {
+        themeMode = isHalloweenPeriod() ? "halloween" : "normal";
+    }
+
+    applyTheme(themeMode);
 
     let speedrunPref = false;
     try {
